@@ -1,6 +1,6 @@
 import { World } from "./scripts/world.js";
-import { Hero } from "./scripts/hero.js";
-import { Enemy } from "./scripts/enemy.js";
+import { Hero } from "./scripts/character.js";
+import { Enemy } from "./scripts/character.js";
 import { Input } from "./scripts/input.js";
 export const TILE_SIZE = 32;
 export const COLS = 15;
@@ -12,27 +12,30 @@ export const HALF_TILE = TILE_SIZE / 2;
 
 window.addEventListener('load', function() {
     const canvas = document.getElementById('canvas1');
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d');
     canvas.width = GAME_WIDTH;
     canvas.height = GAME_HEIGHT;
 
     class Game {
         constructor() {
-            this.world = new World()
+            this.world = new World();
+            this.input = new Input(this);
+
             this.hero = new Hero({
                 game: this,
-                sprite: {image: document.getElementById('hero1'), x:0, y:11, width: 64, height: 64 }, 
-                position: {x: 1 * TILE_SIZE, y: 2 *TILE_SIZE},
-                scale: 1
+                sprite: {image: document.getElementById('hero1'), x:0, y:11, width: 64, height: 64}, 
+                position: {x: 1 * TILE_SIZE, y: 2 * TILE_SIZE},
+                scale: 1,
+                controls: {up: 'w', down: 's', left: 'a', right: 'd'}
             });
 
             this.enemy = new Enemy({
                 game: this,
-                sprite: {image: document.getElementById('enemy1'), x:0, y:11, width: 64, height: 64 }, 
-                position: {x: 3 * TILE_SIZE, y: 5 *TILE_SIZE},
-                scale: 1
+                sprite: {image: document.getElementById('enemy1'), x:0, y:11, width: 64, height: 64}, 
+                position: {x: 6 * TILE_SIZE, y: 2 * TILE_SIZE},
+                scale: 1,
+                controls: {up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight'}
             });
-            this.input = new Input(this)
 
             this.eventUpdate = false;
             this.eventTimer = 0;
@@ -45,11 +48,13 @@ window.addEventListener('load', function() {
         }
         render(ctx, deltaTime) {
             this.hero.update(deltaTime); 
+            this.enemy.update(deltaTime);
 
-            this.world.drawBackground(ctx)
+            this.world.drawBackground(ctx);
             if (this.debug) this.world.drawGrid(ctx);
-            this.hero.draw(ctx)
-            this.world.drawForeground(ctx)
+            this.hero.draw(ctx);
+            this.enemy.draw(ctx);
+            this.world.drawForeground(ctx);
             if (this.debug) this.world.drawCollisionMap(ctx);
 
             if(this.eventTimer < this.eventInterval) {
@@ -64,7 +69,7 @@ window.addEventListener('load', function() {
 
     const game = new Game();
 
-    let lastTime = 0
+    let lastTime = 0;
     function animate(timeStamp) {
         requestAnimationFrame(animate);
 
@@ -73,6 +78,5 @@ window.addEventListener('load', function() {
 
         game.render(ctx, deltaTime);
     }
-    requestAnimationFrame(animate)
-    
-})
+    requestAnimationFrame(animate);
+});
